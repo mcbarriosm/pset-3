@@ -12,7 +12,7 @@ rm(list = ls()) # limpia el entorno de R
 ## Llamar y/o instalar las librerias a usar:
  
 require(pacman)
-p_load(tidyverse, rio, 
+p_load(tidyverse, rio, skimr, 
        arrow, ## read parque files
        broom, # tidy-coefficients
        mfx, # marginal effects
@@ -21,7 +21,12 @@ p_load(tidyverse, rio,
        lmtest, # HAC (Newey-West) standard errors
        fixest, # hdfe regressions (feols)
        modelsummary, # Coefplot with modelplot
-       stargazer # export tables to latex 
+       stargazer ,# export tables to latex 
+       sf, ## datos espaciales
+       leaflet, ## visualizaciones
+       tmaptools, ## geocodificar
+       ggsn, ## map scale bar
+       osmdata ## packages with census data
 ) 
 
 ## PUNTO 1:
@@ -133,4 +138,4 @@ stargazer(ols_1, ols_2,ols_3,
           digits = 3, 
           out = paste0('output/resultados_regresiones.xlsx'))
 
-
+## PUNTO 2:
