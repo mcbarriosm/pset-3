@@ -6,13 +6,13 @@ R.version.string
 
 ## ------- PROBLEM-SET 3 -------
 
-## configuracion inicial 
+## Configuracion inicial 
 rm(list = ls()) # limpia el entorno de R
 
 ## Llamar y/o instalar las librerias a usar:
  
 require(pacman)
-p_load(tidyverse, rio, skimr, 
+p_load(tidy, tidyverse, rio, skimr, coefplot,
        arrow, ## read parque files
        broom, # tidy-coefficients
        mfx, # marginal effects
@@ -34,7 +34,7 @@ p_load(tidyverse, rio, skimr,
 ## 1.1. Estimaciones:
 
 ## Importar los datos de las regresiones
-datos <- read_rds("input/data_regresiones.rds", refhook = NULL)
+datos <- read_rds("input/data_regresiones.rds", refhook = NULL) %>% as.tibble()
 head(datos)
 
 ## Modelo econometrico 1:
@@ -119,7 +119,9 @@ datos$predict_ols = predict(object = ols_3 , newdata = datos )
 
 # joint models (modelsummary)
 coeficientes <- list(ols_1, ols_2, ols_3)
-msummary(coeficientes)
+msummary(coeficientes, output = "data.frame")
+tabla <- msummary(coeficientes, output = "data.frame")
+view(tabla)
 
 # coefplot
 mods = list('Modelo 1' = ols_1 , 'Modelo 2' = ols_2 , 'Modelo 3' = ols_3)
@@ -131,11 +133,6 @@ modelplot(mods) + coord_flip() +
 ## 1.3. Exportar resultados:
 
 # export table
-stargazer(ols_1, ols_2,ols_3, 
-          type= 'text',
-          dep.var.labels = c('','Price',''), 
-          df = FALSE,
-          digits = 3, 
-          out = paste0('output/resultados_regresiones.xlsx'))
+export(tabla, 'output/resultados_regresiones.xlsx')
 
 ## PUNTO 2:
