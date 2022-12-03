@@ -26,7 +26,9 @@ p_load(tidy, tidyverse, rio, skimr, coefplot,
        leaflet, ## visualizaciones
        tmaptools, ## geocodificar
        ggsn, ## map scale bar
-       osmdata ## packages with census data
+       ggmap, ##get_stamenmap 
+       osmdata, ## packages with census data
+       ggspatial
 ) 
 
 ## PUNTO 1:
@@ -136,3 +138,80 @@ modelplot(mods) + coord_flip() +
 export(tabla, 'output/resultados_regresiones.xlsx')
 
 ## PUNTO 2:
+
+## 2.1. Descargar datos
+
+## Poligono Bogotá, Colombia
+
+bogota <- opq(bbox = getbb("Bogotá Colombia")) %>%
+            add_osm_feature(key = "boundary", value = "administrative") %>%
+            osmdata_sf()
+
+bogota <- bogota$osm_multipolygons %>% subset(admin_level==9)
+
+## Restaurantes (puntos):
+
+## objeto osm
+osm <- opq(bbox = getbb("Bogotá Colombia")) %>%
+          add_osm_feature(key="amenity" , value="restaurant") 
+class(osm)
+
+## extraer Simple Features Collection
+osm_sf <- osm %>% osmdata_sf()
+osm_sf
+
+## Obtener un objeto sf
+restaurantes <- osm_sf$osm_points 
+restaurantes
+
+## Parques (poligonos):
+
+parques <- opq(bbox = getbb("Bogotá Colombia")) %>%
+            add_osm_feature(key = "leisure", value = "park") %>%
+            osmdata_sf() %>% .$osm_polygons 
+parques
+
+## 2.2. Visualizar la info anterior:
+
+##Visualizar los restaurantes (puntos):
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=restaurantes , col="red")
+
+##Visualizar los parques (poligonos):
+
+leaflet() %>% addTiles() %>% addPolygons(data=parques)
+
+## 2.3. Geocodificar direcciones:
+
+##Restaurante Emilia Grace (Calle 65 #4a - 51)
+
+rest_emilia <- geocode_OSM("Calle 65 %4% A - 51, Bogotá", as.sf = T)
+rest_emilia
+
+## 2.4. Exportar mapa:
+
+## add osm layer
+
+osm_layer <- get_stamenmap(bbox = as.vector(st_bbox(medellin)),
+                           maptype = "toner", source = "osm", zoom = 13)
+
+## Creacion un unico mapa de los restaurantes, parques y el restaurante Emilia Grace de la 
+## ciudad de Bogota. Se adiciona la barra de escalas, la estrella del norte y un theme para 
+## mejorar la apariencia del mapa.
+
+mapa_bog <- ggplot(data = bogota) +
+      geom_sf(color = "black") +
+      xlab("Longitud") + ylab("Latitud") +
+      ggtitle("Mapa de los restaurantes y parques de Bogotá, Colombia", 
+              subtitle = "Ubicación del restaurante Emilia Grace (punto verde)") +
+      geom_sf(data = restaurantes, color = "red") +
+      geom_sf(data = parques, color = "blue") +
+      geom_sf(data = rest_emilia, color = "green") +
+      scalebar(data = bogota, dist = 5, transform = T, dist_unit = "km") + 
+      annotation_scale() + annotation_north_arrow(location = "topleft") + theme_linedraw()
+
+mapa_bog
+
+## PUNTO 3:
+
+
