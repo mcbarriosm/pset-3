@@ -26,9 +26,10 @@ p_load(tidy, tidyverse, rio, skimr, coefplot,
        leaflet, ## visualizaciones
        tmaptools, ## geocodificar
        ggsn, ## map scale bar
-       ggmap, ##get_stamenmap 
+       ggmap, ## get_stamenmap 
        osmdata, ## packages with census data
-       ggspatial
+       ggspatial, ## mapas de datos espaciales
+       rvest ## web-scraping
 ) 
 
 ## PUNTO 1:
@@ -214,4 +215,26 @@ mapa_bog
 
 ## PUNTO 3:
 
+## 3.1. Leer URL y crear un objeto que contenga el HTML de la pagina
 
+## Leer URL
+
+my_url <- "https://es.wikipedia.org/wiki/Departamentos_de_Colombia"
+
+browseURL(my_url) ## Ir a la pagina
+
+## Crear objeto que contiene el HTML de la pagina como un objeto xml_document
+
+my_html <- read_html(my_url) ## Leer el HTML de la pagina
+
+class(my_html) ## Ver la clase del objeto
+
+view(my_html)
+
+## 3.2. Extraer el titulo de la pagina (Departamentos de Colombia)
+
+my_html %>% html_elements("h1") %>% html_text()
+
+## Usando el xpath:
+
+my_html %>% html_node(xpath = '//*[@id="firstHeading"]/span') %>% html_text()
