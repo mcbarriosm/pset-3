@@ -29,7 +29,8 @@ p_load(tidy, tidyverse, rio, skimr, coefplot,
        ggmap, ## get_stamenmap 
        osmdata, ## packages with census data
        ggspatial, ## mapas de datos espaciales
-       rvest ## web-scraping
+       rvest, ## web-scraping
+       textcat, stringi, tm, cluster, worldcloud ## text-data
 ) 
 
 ## PUNTO 1:
@@ -238,3 +239,72 @@ my_html %>% html_elements("h1") %>% html_text()
 ## Usando el xpath:
 
 my_html %>% html_node(xpath = '//*[@id="firstHeading"]/span') %>% html_text()
+
+## 3.3. Extraer la tabla que contiene los departamentos de Colombia
+
+my_table <- my_html %>% html_table()
+
+## numero de tablas extraidas
+
+length(my_table)
+
+my_table[[4]]
+
+## creacion del objeto
+
+tabla_departamentos <- my_table[[4]]
+
+## Exportar la tabla de departamentos de Colombia
+
+export(tabla_departamentos, 'output/tabla_departamento.xlsx')
+
+## 3.4. Extraer los parrafos del documento (elementos con etiqueta p)
+
+my_html %>% html_elements("p") %>% html_text()
+
+## crear objeto
+
+parrafos <- my_html %>% html_elements("p") %>% html_text()
+
+## vector de caracteres a corpus
+
+corpus <- Corpus(VectorSource(parrafos)) ## formato de texto
+class(corpus)
+
+## matriz con terminos
+
+tdm_corpus <- TermDocumentMatrix(corpus)
+class(tdm_corpus)
+
+## en columnas estan los parrafos y en las filas el numero de palabras
+
+dim(tdm_corpus)
+
+## frecuencia de palabras (se repiten al menos 5 veces)
+
+findFreqTerms(tdm_corpus, lowfreq = 5)
+frecuentes <- findFreqTerms(tdm_corpus, lowfreq = 5)
+
+## palabras con las que mas se asocian las primeras 5 palabras del vector frecuentes
+
+findAssocs(tdm_corpus, frecuentes[1:5], rep(x = 0.45, rep = 50))
+
+## convertir el objeto en una matriz de frecuencias
+
+matriz_parrafos <- as.matrix(tdm_corpus) ## lo vuelve una matriz
+dim(matriz_parrafos)
+view(matriz_parrafos)
+
+## sumar la frecuencia de cada palabra
+
+frec_words <- sort(rowSums(matriz_parrafos), decreasing = T)
+class(frec_words)
+df_words <- data.frame(word = names(frec_words), n = frec_words)
+
+## Graficar la nube de palabras
+
+wordcloud(words = df_words$word, freq = df_words$n, min.freq = 5,
+          max.words = 20, random.order = T, rot.per = 0.15, scale = c(2,1))
+
+wordcloud(words = df_words$word, freq = df_words$n, min.freq = 1,
+          max.words = 2000, random.order = F, colors = brewer.pal(10,"Dark2"))
