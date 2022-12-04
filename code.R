@@ -185,17 +185,12 @@ leaflet() %>% addTiles() %>% addPolygons(data=parques)
 
 ## 2.3. Geocodificar direcciones:
 
-##Restaurante Emilia Grace (Calle 65 #4a - 51)
+##Restaurante Emilia Grace (Calle 65 #4a - 51) en Bogota
 
 rest_emilia <- geocode_OSM("Calle 65 %4% A - 51, Bogotá", as.sf = T)
 rest_emilia
 
 ## 2.4. Exportar mapa:
-
-## add osm layer
-
-osm_layer <- get_stamenmap(bbox = as.vector(st_bbox(medellin)),
-                           maptype = "toner", source = "osm", zoom = 13)
 
 ## Creacion un unico mapa de los restaurantes, parques y el restaurante Emilia Grace de la 
 ## ciudad de Bogota. Se adiciona la barra de escalas, la estrella del norte y un theme para 
@@ -253,6 +248,7 @@ my_table[[4]]
 ## creacion del objeto
 
 tabla_departamentos <- my_table[[4]]
+tabla_departamentos
 
 ## Exportar la tabla de departamentos de Colombia
 
